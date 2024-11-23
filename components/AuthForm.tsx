@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Loader } from "lucide-react";
-import { createAccount } from "@/lib/actions/user.action";
+import { createAccount, signInUser } from "@/lib/actions/user.action";
 import OTPModal from "./OTPModal";
 
 type FormType = "sign-up" | "sign-in";
@@ -51,13 +51,25 @@ const AuthForm = ({ type }: AuthFormProps) => {
     setIsLoading(true);
     setErrorMessage("");
     try {
-      const user = await createAccount({
-        fullName: values.fullName || "",
-        email: values.email,
-      });
+      const user =
+        type === "sign-up"
+          ? await createAccount({
+              fullName: values.fullName || "",
+              email: values.email,
+            })
+          : await signInUser(values.email);
+
+      if (!user.accountId) {
+        setErrorMessage(
+          user.error || "Failed to sign in account. Please try again."
+        );
+        return;
+      }
       setAccountId(user.accountId);
-    } catch {
-      setErrorMessage("Failed to create account. Please try again.");
+    } catch (error) {
+      setErrorMessage(
+        `Failed to ${type === "sign-in" ? "sign in" : "sign up"} account. Please try again.`
+      );
     } finally {
       setIsLoading(false);
     }

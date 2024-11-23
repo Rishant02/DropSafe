@@ -1,10 +1,12 @@
 "use server";
 
 import { ID, Query } from "node-appwrite";
-import { createAdminClient } from "../appwrite";
+import { createAdminClient, createSessionClient } from "../appwrite";
 import { appwriteConfig } from "../appwrite/config";
 import { parseStringfy } from "../utils";
 import { cookies } from "next/headers";
+import { placeholderImageUrl } from "@/constants";
+import { redirect } from "next/navigation";
 
 const getUserByEmail = async (email: string) => {
   const { databases } = await createAdminClient();
@@ -50,7 +52,7 @@ export const createAccount = async ({
       {
         fullName,
         email,
-        avatar: "https://avatar.iran.liara.run/public/47",
+        avatar: placeholderImageUrl,
         accountId,
       }
     );
@@ -71,5 +73,42 @@ export const verifySecret = async (accountId: string, password: string) => {
     return parseStringfy({ sessionId: session.$id });
   } catch (error) {
     handleError(error, "Failed to verify otp");
+  }
+};
+
+export const getCurrentUser = async () => {
+  const { databases, account } = await createSessionClient();
+  const result = await account.get();
+  const user = await databases.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.usersCollectionId,
+    [Query.equal("accountId", [result.$id])]
+  );
+  if (user.total <= 0) return null;
+  return parseStringfy(user.documents[0]);
+};
+
+export const signOutUser = async () => {
+  const { account } = await createSessionClient();
+  try {
+    await account.deleteSession("current");
+    (await cookies()).delete("appwrite-session");
+  } catch (error) {
+    handleError(error, "Failed to sign out user");
+  } finally {
+    redirect("/sign-in");
+  }
+};
+
+export const signInUser = async (email: string) => {
+  try {
+    const exisitngUser = await getUserByEmail(email);
+    if (exisitngUser) {
+      await sendEmailOTP(email);
+      return parseStringfy({ accountId: exisitngUser.accountId });
+    }
+    return parseStringfy({ accountId: exisitngUser, error: "User not found" });
+  } catch (error) {
+    handleError(error, "Failed to sign in user");
   }
 };
