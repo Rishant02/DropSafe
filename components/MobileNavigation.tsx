@@ -3,7 +3,6 @@ import { useState } from "react";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -20,11 +19,19 @@ import FileUploader from "./FileUploader";
 import { signOutUser } from "@/lib/actions/user.action";
 
 type Props = {
+  $id: string;
+  accountId: string;
   fullName: string;
   email: string;
   avatar: string;
 };
-const MobileNavigation = ({ fullName, email, avatar }: Props) => {
+const MobileNavigation = ({
+  $id: ownerId,
+  accountId,
+  fullName,
+  email,
+  avatar,
+}: Props) => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   return (
@@ -80,7 +87,7 @@ const MobileNavigation = ({ fullName, email, avatar }: Props) => {
           </nav>
           <Separator className="my-5 bg-light-200/20" />
           <div className="flex flex-col justify-center gap-5 pb-5">
-            <FileUploader />
+            <FileUploader ownerId={ownerId} accountId={accountId} />
             <Button
               type="submit"
               className="mobile-sign-out-button"

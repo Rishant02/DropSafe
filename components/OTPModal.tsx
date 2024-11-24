@@ -20,6 +20,7 @@ import { Loader, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { sendEmailOTP, verifySecret } from "@/lib/actions/user.action";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 interface OTPModalProps {
   accountId: string;
@@ -27,6 +28,7 @@ interface OTPModalProps {
 }
 const OTPModal = ({ accountId, email }: OTPModalProps) => {
   const router = useRouter();
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(true);
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -38,12 +40,23 @@ const OTPModal = ({ accountId, email }: OTPModalProps) => {
       const sessionId = await verifySecret(accountId, password);
       if (sessionId) router.push("/");
     } catch (error) {
-      console.log("Failed to verify OTP", error);
+      toast({
+        title: "Invalid OTP",
+        description: "Please enter a valid OTP",
+        className: "error-toast",
+      });
     } finally {
       setIsLoading(false);
     }
   };
-  const handleResendOTP = async () => await sendEmailOTP(email);
+  const handleResendOTP = async () => {
+    await sendEmailOTP(email);
+    toast({
+      title: "OTP Resent",
+      description: "We have resent the OTP to your email",
+    });
+    setPassword("");
+  };
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogContent className="shad-alert-dialog">
