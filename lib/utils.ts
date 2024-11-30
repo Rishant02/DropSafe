@@ -14,6 +14,7 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { appwriteConfig } from "./appwrite/config";
+import { UsageSummary } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -159,44 +160,44 @@ export const getFileIcon = (
 };
 
 // DASHBOARD UTILS
-export const getUsageSummary = (totalSpace: any) => {
+export const getUsageSummary = (totalSpace: any): UsageSummary[] => {
   return [
     {
       title: "Documents",
       size: totalSpace.document.size,
       latestDate: totalSpace.document.latestDate,
-      icon: FileText,
+      icon: "/icons/file-document-light.svg",
       url: "/documents",
     },
     {
       title: "Images",
       size: totalSpace.image.size,
       latestDate: totalSpace.image.latestDate,
-      icon: Image,
+      icon: "/icons/file-image-light.svg",
       url: "/images",
     },
     {
-      type: "Media",
+      title: "Media",
       size: totalSpace.video.size + totalSpace.audio.size,
       latestDate:
         totalSpace.video.latestDate > totalSpace.audio.latestDate
           ? totalSpace.video.latestDate
           : totalSpace.audio.latestDate,
-      icon: Clapperboard,
+      icon: "/icons/file-video-light.svg",
       url: "/media",
     },
     {
       title: "Archives",
       size: totalSpace.archive.size,
       latestDate: totalSpace.archive.latestDate,
-      icon: Archive,
+      icon: "/icons/file-video-light.svg",
       url: "/archives",
     },
     {
       title: "Others",
       size: totalSpace.other.size,
       latestDate: totalSpace.other.latestDate,
-      icon: FileType,
+      icon: "/icons/file-other-light.svg",
       url: "/others",
     },
   ];

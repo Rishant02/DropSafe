@@ -8,6 +8,8 @@ import { constructFileUrl, getFileType, parseStringfy } from "../utils";
 import { revalidatePath } from "next/cache";
 import {
   DeleteFileProps,
+  FileType,
+  GetFilesProps,
   RenameFileProps,
   UpdateFileUsersProps,
   UploadFileProps,
@@ -19,13 +21,28 @@ const handleError = (error: unknown, message: string) => {
   throw error;
 };
 
-const createQueries = (currentUser: Models.Document) => {
+const createQueries = (
+  currentUser: Models.Document,
+  types: string[],
+  searchText: string,
+  sort: string,
+  limit?: number
+) => {
   const queries = [
     Query.or([
       Query.equal("owner", [currentUser.$id]),
       Query.contains("users", [currentUser.email]),
     ]),
   ];
+  if (types.length > 0) queries.push(Query.equal("type", types));
+  if (searchText) queries.push(Query.contains("name", [searchText]));
+  if (limit) queries.push(Query.limit(limit));
+  if (sort) {
+    const [sortBy, orderBy] = sort.split("-");
+    queries.push(
+      orderBy === "asc" ? Query.orderAsc(sortBy) : Query.orderDesc(sortBy)
+    );
+  }
   return queries;
 };
 export const uploadFile = async ({
@@ -72,12 +89,17 @@ export const uploadFile = async ({
   }
 };
 
-export const getFiles = async () => {
+export const getFiles = async ({
+  types = [],
+  searchText = "",
+  sort = "$createdAt-desc",
+  limit,
+}: GetFilesProps) => {
   const { databases } = await createAdminClient();
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) throw new Error("User not found");
-    const queries = createQueries(currentUser);
+    const queries = createQueries(currentUser, types, searchText, sort, limit);
     const files = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.filesCollectionId,
@@ -149,5 +171,45 @@ export const deleteFile = async ({
     return parseStringfy({ status: "success" });
   } catch (error) {
     handleError(error, "Failed to delete file");
+  }
+};
+
+export const getSpaceUsed = async () => {
+  try {
+    const { databases } = await createAdminClient();
+    const currentUser = await getCurrentUser();
+    if (!currentUser) throw new Error("User not found");
+    const files = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesCollectionId,
+      [Query.equal("owner", [currentUser.$id])]
+    );
+    const totalSpace = {
+      document: { size: 0, latestDate: "" },
+      image: { size: 0, latestDate: "" },
+      video: { size: 0, latestDate: "" },
+      audio: { size: 0, latestDate: "" },
+      archive: { size: 0, latestDate: "" },
+      other: { size: 0, latestDate: "" },
+      used: 0,
+      max: 2 * 1024 * 1024 * 1024,
+    };
+
+    files.documents.forEach((file) => {
+      const fileType = file.type as FileType;
+      totalSpace[fileType].size += file.size;
+      totalSpace.used += file.size;
+
+      if (
+        !totalSpace[fileType].latestDate ||
+        new Date(file.$updatedAt) > new Date(totalSpace[fileType].latestDate)
+      ) {
+        totalSpace[fileType].latestDate = file.$updatedAt;
+      }
+    });
+
+    return parseStringfy(totalSpace);
+  } catch (error) {
+    handleError(error, "Failed to get space used");
   }
 };

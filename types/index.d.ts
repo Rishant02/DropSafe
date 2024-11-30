@@ -114,3 +114,11 @@ declare interface UploadFile {
   $databaseId: string;
   $collectionId: string;
 }
+
+declare interface UsageSummary {
+  title: string;
+  size: number;
+  latestDate: string;
+  icon: string;
+  url: string;
+}
