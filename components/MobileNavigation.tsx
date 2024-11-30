@@ -11,29 +11,18 @@ import { usePathname } from "next/navigation";
 import { LogOut, Menu } from "lucide-react";
 import Image from "next/image";
 import { Separator } from "./ui/separator";
-import { navItems } from "@/constants";
+import { navItems, placeholderImageUrl } from "@/constants";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import FileUploader from "./FileUploader";
 import { signOutUser } from "@/lib/actions/user.action";
+import { useUser } from "@/provider/UserContext";
 
-type Props = {
-  $id: string;
-  accountId: string;
-  fullName: string;
-  email: string;
-  avatar: string;
-};
-const MobileNavigation = ({
-  $id: ownerId,
-  accountId,
-  fullName,
-  email,
-  avatar,
-}: Props) => {
+const MobileNavigation = () => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { user } = useUser();
   return (
     <header className="mobile-header">
       <div className="items-center gap-1 flex">
@@ -48,15 +37,15 @@ const MobileNavigation = ({
           <SheetTitle>
             <div className="header-user">
               <Image
-                src={avatar}
+                src={user?.avatar || placeholderImageUrl}
                 alt="user-avatar"
                 width={44}
                 height={44}
                 className="header-user-avatar"
               />
               <div className="sm:hidden lg:block">
-                <p className="subtitle-2 capitalize">{fullName}</p>
-                <p className="caption">{email}</p>
+                <p className="subtitle-2 capitalize">{user?.fullName}</p>
+                <p className="caption">{user?.email}</p>
               </div>
             </div>
             <Separator className="mb-4 bg-light-200/20" />
@@ -87,7 +76,7 @@ const MobileNavigation = ({
           </nav>
           <Separator className="my-5 bg-light-200/20" />
           <div className="flex flex-col justify-center gap-5 pb-5">
-            <FileUploader ownerId={ownerId} accountId={accountId} />
+            <FileUploader />
             <Button
               type="submit"
               className="mobile-sign-out-button"

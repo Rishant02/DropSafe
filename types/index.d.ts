@@ -82,3 +82,35 @@ declare interface ShareInputProps {
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemove: (email: string) => void;
 }
+
+declare interface User {
+  fullName: string;
+  email: string;
+  avatar: string;
+  accountId: string;
+  $id: string;
+  $createdAt: string;
+  $updatedAt: string;
+  $permissions: string[];
+  files: UploadFile[];
+  $databaseId: string;
+  $collectionId: string;
+}
+
+declare interface UploadFile {
+  name: string;
+  url: string;
+  type: string;
+  bucketFileId: string;
+  accountId: string;
+  extension: string;
+  size: number;
+  users: string;
+  $id: string;
+  $createdAt: string;
+  $updatedAt: string;
+  $permissions: string[];
+  owner: User[];
+  $databaseId: string;
+  $collectionId: string;
+}

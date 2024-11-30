@@ -21,12 +21,15 @@ import { Button } from "./ui/button";
 import { sendEmailOTP, verifySecret } from "@/lib/actions/user.action";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { User } from "@/types";
 
 interface OTPModalProps {
-  accountId: string;
   email: string;
+  user: User;
+  setUser: (user: User | null) => void;
 }
-const OTPModal = ({ accountId, email }: OTPModalProps) => {
+
+const OTPModal = ({ email, user, setUser }: OTPModalProps) => {
   const router = useRouter();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(true);
@@ -37,7 +40,7 @@ const OTPModal = ({ accountId, email }: OTPModalProps) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const sessionId = await verifySecret(accountId, password);
+      const sessionId = await verifySecret(user.accountId, password);
       if (sessionId) router.push("/");
     } catch (error) {
       toast({
@@ -57,8 +60,13 @@ const OTPModal = ({ accountId, email }: OTPModalProps) => {
     });
     setPassword("");
   };
+  const handleClose = () => {
+    setIsOpen(false);
+    setPassword("");
+    setUser(null);
+  };
   return (
-    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+    <AlertDialog open={isOpen} onOpenChange={handleClose}>
       <AlertDialogContent className="shad-alert-dialog">
         <AlertDialogHeader className="relative flex justify-center">
           <AlertDialogTitle className="h2 text-center">

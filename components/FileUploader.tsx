@@ -10,13 +10,13 @@ import { MAX_FILE_SIZE } from "@/constants";
 import { useToast } from "@/hooks/use-toast";
 import { uploadFile } from "@/lib/actions/file.action";
 import { usePathname } from "next/navigation";
+import { useUser } from "@/provider/UserContext";
 
 interface Props {
-  ownerId: string;
-  accountId: string;
   className?: string;
 }
-const FileUploader = ({ ownerId, accountId, className }: Props) => {
+const FileUploader = ({ className }: Props) => {
+  const { user } = useUser();
   const { toast } = useToast();
   const path = usePathname();
   const [files, setFiles] = useState<File[]>([]);
@@ -41,8 +41,8 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
         }
         return uploadFile({
           file,
-          ownerId,
-          accountId,
+          ownerId: user?.$id as string,
+          accountId: user?.accountId as string,
           path,
         }).then((uploadedFile) => {
           if (uploadedFile) {
@@ -54,7 +54,7 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
       });
       await Promise.all(uploadPromises);
     },
-    [ownerId, accountId, path]
+    [user?.$id, user?.accountId, path]
   );
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
   const handleRemoveFile = (

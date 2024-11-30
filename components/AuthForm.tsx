@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Loader } from "lucide-react";
 import { createAccount, signInUser } from "@/lib/actions/user.action";
 import OTPModal from "./OTPModal";
+import { User } from "@/types";
 
 type FormType = "sign-up" | "sign-in";
 interface AuthFormProps {
@@ -37,7 +38,7 @@ const authFormSchema = (formType: FormType) => {
 const AuthForm = ({ type }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [accountId, setAccountId] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   const formSchema = authFormSchema(type);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -51,21 +52,20 @@ const AuthForm = ({ type }: AuthFormProps) => {
     setIsLoading(true);
     setErrorMessage("");
     try {
-      const user =
+      const result =
         type === "sign-up"
           ? await createAccount({
               fullName: values.fullName || "",
               email: values.email,
             })
           : await signInUser(values.email);
-
-      if (!user.accountId) {
+      if (!result.user) {
         setErrorMessage(
-          user.error || "Failed to sign in account. Please try again."
+          result.error || "Failed to sign in account. Please try again."
         );
         return;
       }
-      setAccountId(user.accountId);
+      setUser(result.user);
     } catch (error) {
       setErrorMessage(
         `Failed to ${type === "sign-in" ? "sign in" : "sign up"} account. Please try again.`
@@ -150,8 +150,12 @@ const AuthForm = ({ type }: AuthFormProps) => {
         </form>
       </Form>
       {/* OTP Verification */}
-      {accountId && (
-        <OTPModal email={form.getValues("email")} accountId={accountId} />
+      {user && (
+        <OTPModal
+          email={form.getValues("email")}
+          user={user}
+          setUser={setUser}
+        />
       )}
     </>
   );

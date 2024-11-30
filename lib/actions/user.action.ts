@@ -57,7 +57,7 @@ export const createAccount = async ({
       }
     );
   }
-  return parseStringfy({ accountId });
+  return parseStringfy({ user: existingUser });
 };
 
 export const verifySecret = async (accountId: string, password: string) => {
@@ -105,9 +105,9 @@ export const signInUser = async (email: string) => {
     const exisitngUser = await getUserByEmail(email);
     if (exisitngUser) {
       await sendEmailOTP(email);
-      return parseStringfy({ accountId: exisitngUser.accountId });
+      return parseStringfy({ user: exisitngUser });
     }
-    return parseStringfy({ accountId: exisitngUser, error: "User not found" });
+    return parseStringfy({ user: exisitngUser, error: "User not found" });
   } catch (error) {
     handleError(error, "Failed to sign in user");
   }

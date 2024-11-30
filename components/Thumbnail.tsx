@@ -20,14 +20,16 @@ function ThumbnailIcon({ type, ext, imageClassName }: Props) {
     />
   );
 }
+
 const Thumbnail = ({
   type,
   ext,
-  imageClassName,
-  className,
+  imageClassName = "",
+  className = "",
   url = "",
 }: Props) => {
-  const isImage = type === "image" && ext !== "svg";
+  const isImage = type === "image" && ext.toLowerCase() !== "svg" && url;
+
   return (
     <figure className={cn("thumbnail", className)}>
       {isImage ? (
@@ -37,9 +39,8 @@ const Thumbnail = ({
           width={100}
           height={100}
           className={cn(
-            "size-8 object-contain",
-            imageClassName,
-            isImage && "thumbnail-image"
+            "size-8 object-contain thumbnail-image",
+            imageClassName
           )}
         />
       ) : (

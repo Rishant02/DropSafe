@@ -1,18 +1,15 @@
 "use client";
 import { navItems, placeholderImageUrl } from "@/constants";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/provider/UserContext";
 import { IconPhotoShield } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-type SidebarProps = {
-  fullName: string;
-  email: string;
-  avatar: string;
-};
-const Sidebar = ({ fullName, email, avatar }: SidebarProps) => {
+const Sidebar = () => {
   const pathname = usePathname();
+  const { user } = useUser();
   return (
     <aside className="sidebar">
       <Link href={"/"}>
@@ -59,15 +56,15 @@ const Sidebar = ({ fullName, email, avatar }: SidebarProps) => {
       />
       <div className="sidebar-user-info">
         <Image
-          src={avatar || placeholderImageUrl}
+          src={user?.avatar || placeholderImageUrl}
           alt="user-avatar"
           width={44}
           height={44}
           className="sidebar-user-avatar"
         />
         <div className="hidden lg:block">
-          <p className="subtitle-2 capitalize">{fullName}</p>
-          <p className="caption">{email}</p>
+          <p className="subtitle-2 capitalize">{user?.fullName}</p>
+          <p className="caption">{user?.email}</p>
         </div>
       </div>
     </aside>
